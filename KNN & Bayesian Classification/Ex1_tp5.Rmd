@@ -1,0 +1,169 @@
+---
+title: "synth"
+output: html_document
+date: "2024-04-06"
+---
+
+#Display the data:
+```{r}
+#Load the data
+train_data <- read.table("datasets_tp5/synth_train.txt", header = FALSE)
+colnames(train_data) <- c("Y", "X1", "X2")
+
+#Display the data
+print(train_data)
+```
+
+#Dimension of the data:
+```{r}
+dim(train_data)
+```
+```{r}
+head(train_data)
+```
+#Graphical representation of the data:
+```{r}
+plot(train_data[,2:3], col = train_data[,1], pch = 19, xlab = "X1", ylab = "X2")
+legend("topright", legend = c("Classe 1", "Classe 2"), col = 1:2, pch = 19)
+```
+#Prediction of the pointas (0, 0) and (-2, 2):
+```{r}
+library(class)
+
+X_train <- train_data[,2:3]
+Y_train <- train_data[,1]
+
+new_points <- matrix(c(0, 0, -2, 2), ncol = 2, byrow = TRUE)
+
+predictions <- knn(X_train, new_points, Y_train, k = 15)
+predictions
+```
+#Calculating the emprical errors of k = 15, 10, 5, 3, 1:
+```{r}
+calc_error_rate <- function(predictions, actual) {
+  return (sum(predictions != actual) / length(actual))
+}
+
+k_values <- c(15, 10, 5, 3, 1)
+for (k in k_values) {
+  predictions <- knn(X_train, X_train, Y_train, k = k)
+  error_rate <- calc_error_rate(predictions, Y_train)
+  cat("k =", k, "Empirical error rate:", error_rate, "\n")
+}
+```
+#Decision Frontiers:
+```{r}
+x1 <- seq(min(X_train[,1]), max(X_train[,1]), length.out = 100)
+x2 <- seq(min(X_train[,2]), max(X_train[,2]), length.out = 100)
+grid <- expand.grid(x1, x2)
+
+predictions_grid <- knn(X_train, grid, Y_train, k = 15)
+
+plot(grid, col = ifelse(predictions_grid == 1, "red", "blue"), pch = ".", xlab = "X1", ylab = "X2")
+points(X_train, col = ifelse(Y_train == 1, "red", "blue"), pch = 19)
+legend("topright", legend = c("Class 1", "Class 2"), col = c("red", "blue"), pch = 19)
+```
+```{r}
+test_data <- read.table("datasets_tp5/synth_test.txt", header = FALSE)
+
+X_test <- test_data[,2:3]
+Y_test <- test_data[,1]
+
+predictions_test_k15 <- knn(X_train, X_test, Y_train, k = 15)
+error_rate_k15 <- calc_error_rate(predictions_test_k15, Y_test)
+cat("The empirical error for k = 15:", error_rate_k15, "\n")
+
+predictions_test_k1 <- knn(X_train, X_test, Y_train, k = 1)
+error_rate_k1 <- calc_error_rate(predictions_test_k1, Y_test)
+cat("The empirical error for k = 1:", error_rate_k1, "\n")
+
+cat("The empirical error for the training set with k = 15:", error_rate, "\n")
+```
+#Calculating TVN and TVP:
+```{r}
+TP <- sum(predictions_test_k15 == 1 & Y_test == 1)
+FN <- sum(predictions_test_k15 == 2 & Y_test == 1)
+TVP <- TP / (TP + FN)
+
+TN <- sum(predictions_test_k15 == 2 & Y_test == 2)
+FP <- sum(predictions_test_k15 == 1 & Y_test == 2)
+TVN <- TN / (TN + FP)
+
+cat("True positives (TVP):", TVP, "\n")
+cat("True négatives (TVN):", TVN, "\n")
+```
+#prob_knn function:
+```{r}
+prob_knn <- function(X_train, Y_train, X_test, k) {
+  predictions <- knn(X_train, X_test, Y_train, k = k)
+  prob_1 <- numeric(length(predictions))
+  
+  for (i in 1:length(predictions)) {
+    prob_1[i] <- sum(Y_train[predictions[i] == Y_train] == 1) / sum(predictions[i] == Y_train)
+  }
+  
+  return(prob_1)
+}
+
+#Probability estimations of P(Y = 1|X = x)
+test_probs <- prob_knn(train_data[, 1:2], train_data$Y, test_data[, 1:2], k = 15)
+
+#Cost Matrix
+cost_matrix <- matrix(c(0, 3, 1, 0), nrow = 2, byrow = TRUE)
+rownames(cost_matrix) <- colnames(cost_matrix) <- c(1, 2)
+
+#Bayes Prediction
+predicted_classes <- factor(ifelse(test_probs > 0.5, 1, 2), levels = 1:2)
+
+#Misclassification Cost
+misclassification_cost <- sum(ifelse(predicted_classes == test_data$Y, 0,
+                                     ifelse(predicted_classes == 1, cost_matrix[2, 1],
+                                            cost_matrix[1, 2])))
+print(paste("Test_probs :", test_probs))
+print(paste("Predicted_classes :", predicted_classes))
+print(paste("Misclassification_cost :", misclassification_cost))
+```
+## Methodological Assessment of the Exercise:
+
+### Data Retrieval and Understanding:
+
+- Retrieved synthetic training dataset (synth_train.txt) and test dataset (synth_test.txt) with response variable Y in {1, 2} and feature variable X in R2.
+
+### Data Loading and Exploration:
+
+- Loaded training dataset into R, examined its dimension, and displayed first six records to understand size and structure.
+
+### Data Visualization:
+
+- Represented observations graphically, coloring points by class and modifying symbols, enhancing clarity with a legend.
+
+### K-Nearest Neighbors (KNN) Classification:
+
+- Utilized 'knn' function from *class* package with k = 15 neighbors to predict classes of points at (0,0) and (-2,2).
+
+- Predicted classes of training dataset using knn with k = 10, k = 5, k = 3, and k = 1 neighbors, calculating empirical error rates.
+
+### Decision Boundary Visualization:
+
+- Graphically depicted decision boundary for k = 15 and k = 1 neighbors, constructing grids of points and coloring them based on predicted classes.
+
+### Evaluation on Test Data:
+
+- Loaded test dataset into R, predicted classes with k = 15 and k = 1 neighbors, comparing empirical error rates with training dataset predictions.
+
+### True Positive Rate and True Negative Rate Calculation:
+
+- Calculated true positive rate (TVP) and true negative rate (TVN) of KNN classifier with k = 15 neighbors on test dataset.
+
+### Cost-Sensitive Classification:
+Introduced cost matrix with higher cost for false negatives.
+Programmed prob_knn function to estimate posterior probabilities and derived predictions using Bayes' rule with provided cost matrix.
+Calculated TVP and TVN considering cost-sensitive classification.
+
+
+The exercise encompassed structured tasks including data loading, exploration, visualization, KNN classification, evaluation on both training and test datasets, calculation of true positive and true negative rates, and cost-sensitive classification.
+A variety of R functions and packages were utilized effectively, enhancing understanding of machine learning techniques such as KNN classification, model evaluation, and handling cost-sensitive scenarios.
+
+
+
+

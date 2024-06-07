@@ -1,0 +1,95 @@
+---
+title: "Ex2_tp5"
+output: html_document
+date: "2024-04-11"
+---
+
+#Loading the data:
+```{r}
+load("datasets_tp5/real_data.rda")
+dim(data)
+head(data)
+```
+#Spliting the data into training and testing sets:
+```{r}
+set.seed(123)
+train_indices <- sample(1:nrow(data), 945)
+train_data <- data[train_indices, ]
+test_data <- data[-train_indices, ]
+```
+
+#Calculating the error:
+```{r}
+library(class)
+B <- 20
+kmax <- 100
+err_test <- matrix(NA, kmax, B)
+
+for (b in 1:B) {
+  tr <- sample(1:nrow(data), 900)
+  train <- data[tr, ]
+  test <- data[-tr, ]
+  for (k in 1:kmax) {
+    pred <- knn(train[, -1], test[, -1], train$DIFF, k)
+    err_test[k, b] <- sum(pred != test$DIFF) / length(test$DIFF)
+  }
+}
+
+mean_err_test <- apply(err_test, 1, mean)
+lim <- c(0, max(err_test))
+matplot(err_test, type = "l", lty = 2, col = 2, ylim = lim, xlab = "Nbr of neighbours", ylab = "Error Rate")
+matpoints(mean_err_test, type = "l", col = 2, lwd = 4)
+legend("bottomright", legend = c("Mean Error", "Conditional Errors"), lty = c(1, 3), lwd = c(4, 2), col = c(2, 2))
+which.min(mean_err_test)
+```
+
+```{r}
+train_valid_ind <- sample(1:nrow(data), 945)
+test_ind <- setdiff(1:nrow(data), train_valid_ind)
+
+train_valid_data <- data[train_valid_ind, ]
+test_data <- data[test_ind, ]
+
+train_valid_data$DIFF <- as.numeric(as.character(train_valid_data$DIFF))
+test_data$DIFF <- as.numeric(as.character(test_data$DIFF))
+```
+
+
+```{r}
+set.seed(123)
+train_ind <- sample(1:nrow(train_valid_data), 630)
+train_data <- train_valid_data[train_ind, ]
+valid_data <- train_valid_data[-train_ind, ]
+```
+
+```{r}
+B <- 25
+err_valid <- rep(NA, kmax)
+
+for (k in 1:kmax) {
+  err_k <- rep(NA, B)
+  for (b in 1:B) {
+    tr <- sample(1:nrow(train_valid_data), 600)
+    train <- train_valid_data[tr, ]
+    validation <- train_valid_data[-tr, ]
+    pred <- knn(train[, -1], validation[, -1], train$DIFF, k)
+    err_k[b] <- sum(pred != validation$DIFF) / length(validation$DIFF)
+  }
+  err_valid[k] <- mean(err_k)
+}
+
+k_optimal <- which.min(err_valid)
+
+pred_test <- knn(train_valid_data[, -ncol(train_valid_data)], test_data[, -ncol(test_data)], train_valid_data[, ncol(train_valid_data)], k_optimal)
+err_test <- mean(pred_test != test_data[, ncol(test_data)])
+
+k_cv <- knn.cv(train_valid_data[, -ncol(train_valid_data)], train_valid_data[, ncol(train_valid_data)])
+k_opt <- which.min(k_cv)
+
+knn_pred <- knn(train_valid_data[, -ncol(train_valid_data)], test_data[, -ncol(test_data)], train_valid_data[, ncol(train_valid_data)], k_opt)
+```
+
+```{r}
+test_error <- mean(knn_pred != test_data[, ncol(test_data)])
+cat("The error rate:", test_error, "\n")
+```

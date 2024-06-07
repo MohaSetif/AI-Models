@@ -1,0 +1,43 @@
+---
+title: "Exercice 2 du TP1"
+output: html_document
+date: "2024-03-01"
+---
+```{r}
+LungCapData <- read.table(file.choose(), header = T, sep="\t")
+attach(LungCapData)
+names(LungCapData)
+class(Age)
+class(Smoke)
+levels(Smoke)
+model1 <- lm(LungCap ~ Age + Height)
+summary(model1)
+cor(Age, Height, method="pearson")
+confint(model1, coef.level=0.95)
+model2 <- lm(LungCap ~ Age + Height + Smoke + Gender + Caesarean)
+summary(model2)
+```
+
+## Explanation of every instruction:
+
+Loading data: we choose the dataset and then it gets stored in a dataframe called **LungCapData**.
+
+Attaching data: the dataset is attached to the R search path. This means that the dataset is searched by R when evaluating a variable, so objects in the database can be accessed by simply giving their names.
+
+Displaying variables: the variables or columns' names are disaplyed.
+
+Checking the types of Age and Smoke: we check the types of the variables to assure that they're correctly defined as numbers, factors, etc.
+
+Displaying Smoke's levels: we display its levels (yes or no).
+
+Setting and resuming the linear regression model1 : a linear regression model is constructed with LungCap as the dependent variable and Age and Height as the independent variables. The model summary is displayed, showing coefficients, p-values, etc.
+
+Calculation of the correlation between Age and Height: The correlation between the variables Age and Height is calculated using the Pearson method.
+
+Calculation of confidence intervals for the coefficients of model1: The confidence intervals for the coefficients of model1 are calculated with a confidence level of 95%.
+
+Creation and summary of the model2 linear regression model: A second linear regression model is built with LungCap as the dependent variable and Age, Height, Smoke, Gender and Caesarean as the independent variables. The model summary is displayed.
+
+Model Plot2: A linear regression model is constructed with LungCap as the dependent variable and the rest of the variables as independent variables.
+
+From the results, it can be deduced that all variables are significant because their p-values are less than 0.05, so they are important factors in predicting respiratory problems in this population.

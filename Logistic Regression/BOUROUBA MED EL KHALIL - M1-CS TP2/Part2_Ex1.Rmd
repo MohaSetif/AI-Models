@@ -1,0 +1,55 @@
+---
+title: "PART II: exercise 1"
+output: html_notebook
+---
+
+```{r}
+data <- read.table("MCV.txt", header=TRUE)
+aggregate(data[,c("AGE","CHD")], by=list(data$AGRP), FUN=mean)
+
+plot(data$AGE, data$CHD, xlab="Age", ylab="Maladie Cardiovasculaire")
+```
+#Le nuage de points suggère une relation positive entre l'âge et le risque de maladie cardiovasculaire. Cependant, la relation n'est pas parfaitement linéaire, elle est logistique.
+```{r}
+centre <- tapply(data$AGE, data$AGRP, mean)
+p <- tapply(data$CHD, data$AGRP, mean)
+plot(centre, p, xlab="Centre de classe d'âge", ylab="Proportion de malades")
+
+mod.logit <- glm(CHD ~ AGE, family=binomial(link="logit"), data=data)
+summary(mod.logit)
+
+courbe.logit <- predict(mod.logit, type="response")
+plot(centre, p, ylim=c(0,1), xlab="Centre de classe d'âge", ylab="Proportion observée")
+lines(sort(data$AGE), courbe.logit[order(data$AGE)], col="red")
+
+mod.probit <- glm(CHD ~ AGE, family=binomial(link="probit"), data=data)
+summary(mod.probit)
+anova(mod.logit, mod.probit, test="Chisq")
+
+newdata <- data.frame(AGE=30)
+cote.logit <- predict(mod.logit, newdata, type="response")/(1-predict(mod.logit, newdata, type="response")) 
+cote.probit <- predict(mod.probit, newdata, type="response")/(1-predict(mod.probit, newdata, type="response"))
+
+exp(coef(mod.logit))
+exp(coef(mod.probit))
+
+```
+# Output of the logistic regression model
+
+The coefficient for AGE is positive and highly significant (p-value < 0.001), indicating an increased risk of cardiovascular disease with age.
+The model has 98 residual degrees of freedom and an AIC of 111.5.
+
+# Plot of observed proportions by age group
+There is an increasing relationship between the proportion of diseased individuals and the center of the age group, confirming the age effect.
+
+# Scatterplot of CHD vs AGE
+The relationship is not perfectly linear, justifying the use of a logistic/probit model.
+
+# Scatterplot of observed proportions by age group
+Same information as Image 2 but in scatterplot form.
+
+# Outputs of the logistic and probit models
+The coefficients differ slightly, but the p-values are highly significant for AGE in both models.
+
+The logistic and probit models capture the increasing relationship between age and cardiovascular disease risk similarly.
+These analyses confirm a statistically significant and positive association between age and the risk of cardiovascular disease in these data. Both the logistic and probit models appear appropriate for modeling this non-linear relationship.

@@ -1,0 +1,19 @@
+---
+title: "Part 1: exercise 2"
+output: html_notebook
+---
+
+```{r}
+data(iris)
+
+head(iris)
+
+library(tree)
+iris.tree <- tree(Species ~ ., data = iris)
+plot(iris.tree)
+text(iris.tree)
+
+iris.pruned <- prune.tree(iris.tree, best = 5)
+plot(iris.pruned)
+text(iris.pruned)
+```

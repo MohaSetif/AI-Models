@@ -1,0 +1,150 @@
+---
+title: "Exercice 3 du TP1"
+output: html_document
+date: "2024-03-01"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## 1. Affichage des informations
+
+```{r Mass, echo=FALSE}
+library(MASS)
+print(Boston)
+```
+
+## 2. Affichage de type de chaque donnée
+```{r}
+sapply(Boston, class)
+```
+
+## 3.
+. Il s'agit de 506 observations sur 14 variables continues décrivant diverses caractéristiques de zones résidentielles autour de Boston.
+. La variable cible est medv, la valeur médiane des maisons.
+
+
+## 4.
+```{r}
+n = nrow(Boston)
+set.seed(123)
+index = sample(1:n, size = 400)
+train_boston <- Boston[index,]
+test_boston <- Boston[-index,]
+print(test_boston)
+```
+
+## 5. Relation linéaire entre mdev et age
+```{r}
+print(cor(train_boston$medv, train_boston$age))
+```
+
+## 6. Nuage des points avec medv et age
+```{r}
+library(ggplot2)
+ggplot() + 
+  geom_point(aes(x = train_boston$medv, y = train_boston$age), colour = 'red') +  
+  ggtitle(' les valeurs d’un logement dans la banlieue de Boston (USA) (Training set)') + 
+  xlab('Medv') + 
+  ylab('Age')
+```
+
+## 7+8. Nuage des points avec medv et istat et la ligne de régression
+```{r}
+library(ggplot2)
+regressor = lm(formula = medv ~ lstat, data = train_boston)
+summary(regressor)
+y_pred = predict(regressor, newdata = test_boston)
+ggplot() + 
+  geom_point(aes(x = train_boston$lstat, y = train_boston$medv), colour = 'orange') +
+  geom_line(aes(x=train_boston$lstat,y=predict(regressor, newdata = train_boston)),colour='blue') +   
+  ggtitle(' les valeurs d’un logement dans la banlieue de Boston (USA) (Training set)') + 
+  xlab('Medv') + 
+  ylab('Lstat')
+```
+
+## 9. La verification:
+Statiquement: dans la console R, on remarque que la valuer-p du lstat est inférieure à 2*10^6 (alors < 0.05) ce qui signifie que lstat est une variable significante (independante) pour medv (dependante).
+Graphiquement: la ligne de régression semble bien ajustée aux points de données et suit une tendance linéaire, cela renforce l'idée d'une relation linéaire entre medv et lstat.
+
+## 10. 
+Il y a une relation linéaire entre mdev et lstat.
+
+## 11. 
+Execution du commande pairs(Boston)
+```{r}
+pairs(Boston)
+```
+
+## 12. 
+```{r}
+pairs( ~ Boston[, 1] + Boston[, 3] + Boston[, 7] ,Boston)
+```
+
+## 13. formation du modèle linéaire multiple
+```{r}
+lm_multiple <- lm(medv ~ lstat + age, data = train_boston)
+summary(lm_multiple)
+```
+
+## 14.  
+le modèle linéaire multiple suggère qu'il existe une relation significative entre medv et les variables lstat et age car leur p-value est inférieur à 0.05.
+
+## 15. 
+```{r}
+lm_multiple <- lm(medv ~ log(lstat) + age, data = train_boston)
+summary(lm_multiple)
+```
+## 16. 
+Le logarithme de lstat semble être une meilleure variable explicative.
+
+## 17. 
+Relation linéaire medv entre et toutes les autres variables
+```{r}
+correlation <- cor(Boston)
+print(correlation["medv", ])
+```
+
+## 18.
+
+1. Variables avec des corrélations positives : zn, rm, black sont positivement corrélées avec medv, ce qui signifie qu'une augmentation de ces variables est associée à une augmentation de la valeur médiane des habitations (medv).
+
+2. Variables avec des corrélations négatives : crim, indus, nox, lstat et age sont négativement corrélées avec medv, ce qui signifie qu'une augmentation de ces variables est associée à une diminution de la valeur médiane des habitations (medv).
+
+3. Variables avec des corrélations proches de zéro : chas, dis, rad, tax, ptratio bien que peu corrélées linéairement avec medv, peuvent toujours être importantes dans le modèle de prédiction de medv, car elles pourraient avoir des relations non linéaires ou des interactions avec d'autres variables.
+
+## 19.
+```{r}
+lm_significatif <- lm(medv ~ zn + rm + black + dis + crim + indus + nox + age + lstat , data = train_boston)
+summary(lm_significatif)
+```
+
+## 20. 
+Les variables sélectionnées semblent significatives dans le modèle.
+
+## 21.
+```{r}
+lm_interaction <- lm(medv ~ lstat * age, data = train_boston)
+summary(lm_interaction)
+```
+
+## 22.
+```{r}
+degrees <- 2:7
+for (deg in degrees) {
+  lstat_poly <- poly(train_boston$lstat, degree = deg)
+  age_poly <- poly(train_boston$age, degree = deg)
+ 
+  lm_poly_interaction <- lm(medv ~ lstat_poly * age_poly, data = train_boston)
+  
+  cat("Degree:", deg, "\n")
+  print(summary(lm_poly_interaction))
+  cat("\n")
+}
+```
+A mesure que le degré des termes polynomiaux augmente, les coefficients qui leur sont associés présentent des modèles qui ne sont pas linéaires. Par exemple, les estimations des coefficients de lstat_poly2 et lstat_poly3 dans le modèle Degré 3 ne sont pas liées linéairement aux coefficients de lstat_poly1. De même, les termes d’interaction entre les polynômes lstat et âge introduisent également des relations non linéaires.
+
+## 23. 
+On peut déduire que si on veut faire une régression pour les variables polynomiales, on doit utiliser la régression polynomiale. 

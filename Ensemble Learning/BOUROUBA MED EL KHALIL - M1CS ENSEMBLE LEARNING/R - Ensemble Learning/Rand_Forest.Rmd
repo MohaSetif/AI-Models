@@ -1,0 +1,55 @@
+---
+title: "Rand_Forest"
+output: html_document
+date: "2024-05-06"
+---
+
+```{r}
+
+data <- read.table(file = "data0.txt", header = TRUE)
+X <- data[, -ncol(data)] # Predictor variables
+y <- data[, ncol(data)]  # Target variable
+
+#randomForest estimation
+library(randomForest)
+rf0 <- randomForest(y ~ ., data = X)
+
+#Calculating predictions performances
+rf.predictions <- predict(rf0, X)
+rf.rmse <- sqrt(mean((rf.predictions - y)^2))
+rf.mape <- mean(abs((rf.predictions - y) / y))
+
+cat("Random Forest's RMSE: ", rf.rmse, "\n")
+cat("Random Forest's MAPE: ", rf.mape, "\n")
+
+plot(rf0)
+
+#Optimising the params
+rf.opt <- randomForest(y ~ ., data = X, mtry = 5, nodesize = 10, ntree = 500, sampsize = nrow(X) / 2)
+
+#Calculating the performance of the optimised forest
+rf.opt.predictions <- predict(rf.opt, X)
+rf.opt.rmse <- sqrt(mean((rf.opt.predictions - y)^2))
+rf.opt.mape <- mean(abs((rf.opt.predictions - y) / y))
+
+cat("Optimised Random Forest's RMSE: ", rf.opt.rmse, "\n")
+cat("Optimised Random Forest's MAPE :", rf.opt.mape, "\n")
+
+#Calculating the importance of the variables
+importance(rf0)
+
+#Redoing the operation multiple times
+set.seed(123)
+imp1 <- importance(rf0)
+
+set.seed(456)
+imp2 <- importance(rf0)
+
+#Changing nPerm
+imp.nPerm <- importance(rf0, nPerm = 10)
+```
+
+
+The corr.bias parameter in the randomForest function in R is used to correct bias introduced by correlations among explanatory variables in assessing variable importance.
+
+It adjusts variable importance to account for these correlations. It is Useful when explanatory variables are highly correlated.

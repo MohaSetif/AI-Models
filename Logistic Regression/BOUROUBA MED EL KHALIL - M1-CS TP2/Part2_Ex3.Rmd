@@ -1,0 +1,56 @@
+---
+title: "R Notebook"
+output:
+  html_document:
+    df_print: paged
+---
+
+```{r}
+
+data(mtcars)
+head(mtcars)
+
+mod1 <- glm(vs ~ mpg, data=mtcars, family=binomial)
+summary(mod1)
+
+plot(mod1)
+
+library(ggplot2)
+ggplot(mtcars, aes(x=mpg, y=vs)) + 
+  geom_point() +
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+
+mod2 <- glm(vs ~ am, data=mtcars, family=binomial)
+summary(mod2)
+
+mod3 <- glm(vs ~ mpg + am, data=mtcars, family=binomial)
+summary(mod3)
+
+mod4 <- glm(vs ~ mpg + am, data=mtcars, family=binomial(link="probit"))
+summary(mod4)
+
+mod5 <- lm(vs ~ mpg + am, data=mtcars)
+summary(mod5)
+
+```
+## 1. Logistic model with mpg only:
+The positive mpg coefficient (0.4304) indicates that higher mpg (better fuel efficiency) increases the probability of having a V-shaped engine (vs=1).
+The significant p-value for mpg (0.00659) suggests a significant effect.
+
+## 2. Logistic model with am only:
+The positive am coefficient (0.6931) but non-significant p-value (0.344) indicates that automatic transmission does not seem to have a significant effect on vs in this simple model.
+
+## 3. Logistic model with mpg and am:
+mpg has a positive and significant effect (coeff=0.6809, p=0.00697)
+am has a negative but marginally significant effect (coeff=-3.0073, p=0.06009)
+Together, mpg and am appear to have important effects on vs.
+
+## 4. Probit model with mpg and am:
+The coefficients differ from the logistic model, but the effect directions and significance are similar.
+The probit model assumes a normal distribution rather than logistic.
+
+## 5. Linear model with mpg and am:
+A linear model is not appropriate for a binary outcome variable like vs.
+The coefficients are not directly interpretable in terms of probabilities.
+
+The logistic model with mpg and am appears most appropriate. An increase in mpg increases the probability of having a V-shaped engine, while automatic transmission seems to decrease this probability, although marginally significant. The probit model yields similar conclusions.

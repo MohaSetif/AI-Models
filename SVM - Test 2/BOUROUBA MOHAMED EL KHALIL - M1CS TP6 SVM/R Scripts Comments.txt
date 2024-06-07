@@ -1,0 +1,110 @@
+SVM 1:
+
+The resulting graph shows a two-dimensional projection (sepal length and sepal width) of the iris data for two species: setosa (green points) and virginica (black points).
+
+First, a soft margin linear SVM model with a cost C=1 is trained on this data. The blue points represent the support vectors, which define the maximum margin separating the two classes. The red line corresponds to the obtained separating hyperplane.
+
+Next, a second linear SVM model is trained with a very high-cost C (10000), which is equivalent to using a hard margin. We observe that the found hyperplane (red line) separates the two classes well, but with a narrower margin than the previous soft margin model (overfitting).
+
+With a soft margin, the model tolerates some misclassified points to achieve a wider margin, which can improve generalization. On the other hand, with a hard margin, all points must be correctly classified, which can lead to overfitting on the training data.
+
+The choice of the cost parameter C is therefore crucial to find a good trade-off between maximizing the margin and minimizing classification errors. Cross-validation can be used to determine the best value of C for a particular dataset.
+
+
+
+
+
+
+
+
+
+
+
+SVM 2:
+
+The resulting graph is a 2D visualization of the SVM classification model trained on the iris dataset. It shows the decision boundaries for classifying the iris species based on the petal length and petal width features.
+
+The plot is divided into three regions, each representing one of the three iris species classes - setosa (yellow), versicolor (orange), and virginica (red). The decision boundaries between these regions are depicted by the lines separating the colored areas.
+
+A few key observations from the plot:
+
+The setosa class (yellow region) is completely separated from the other two classes, indicating that the setosa species are easily distinguishable based on the petal length and width features.
+The decision boundary between versicolor and virginica (orange and red regions) is non-linear, suggesting that a linear SVM classifier might not be sufficient to separate these two classes accurately based on just these two features.
+The data points (represented by different symbols) show the support vectors, which are the training instances closest to the decision boundaries and are most influential in determining their position.
+The overlapping regions between versicolor and virginica indicate areas of potential misclassification, where the decision boundary is less clear due to the overlap in feature values between these two classes.
+This visualization provides insights into how the SVM model has learned to separate the three iris species based on the petal length and width and can help identify potential challenges or areas where additional features might be needed for better class separation.
+
+
+
+
+
+
+
+
+
+
+
+
+SVM 3:
+
+Image 1:
+This image shows an SVM classification plot with two distinct classes. The blue points represent one class, and the red triangles represent the other class. The two classes are relatively well-separated, with some overlap in the central region.
+
+Image 2:
+This plot appears to be a kernel density estimation. It shows a smoothed red curve with multiple peaks, resembling a probability density estimation based on underlying data.
+
+
+
+
+
+
+
+
+
+
+
+
+SVM IRIS:
+
+Image 1:
+The plot appears to be a scatter plot with two classes of data points represented by different colors (red and black). The red data points form a larger cluster, while the black points form a dense central cluster surrounded by the pink points. There are also a few isolated pink and black data points located farther away from the main clusters, denoted by plus symbols. The plot suggests a radial separation between the two classes, with some overlap in the central region.
+
+Image 2:
+This plot displays a synthetic dataset with a non-linear relationship between the x and y variables, along with some added noise. The blue line represents the true logarithmic function, the black points are the noisy data points, and the red points are the predictions made by the SVM model. The SVM model seems to capture the overall trend of the data reasonably well, despite the presence of noise.
+
+
+
+
+
+
+
+
+
+
+
+
+SVM PAS A PAS:
+
+Based on the content of the SVM_Pas_a_Pas.pdf document, here is a summary of the main steps and comments:
+
+1. Introduction to SVMs for binary classification with an example of linearly separable data.
+
+The R code shows how to train a linear SVM model on this data and visualize the separating hyperplane and support vectors.
+
+2. Detailed explanation of the SVM method, the concept of maximum margin, and optimization of the problem to find the optimal separating hyperplane.
+
+3. Application to the 2D iris dataset (sepal length/width) showing the support vectors and the decision boundary.
+
+4. Introduction to non-linearly separable data and the use of kernels (kernel trick) to project data into a higher-dimensional space to make them separable.
+
+Example with a polynomial kernel on toy data and iris data.
+
+5. Explanation of soft margins to handle noisy/misclassified data by allowing errors with a penalty.
+
+Visualizations on a toy example.
+
+6. Use of different classification costs for positive/negative errors with the class.
+
+7. One-vs-One approach to extend SVMs to multi-class problems.
+
+8. Application of SVMs for regression with the eps-regression option and visualization of predictions.

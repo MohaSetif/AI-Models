@@ -1,0 +1,73 @@
+---
+title: "Bagging"
+output: html_document
+date: "2024-05-06"
+---
+```{r}
+
+data0 <- read.table("data0.txt", header = TRUE)
+data1 <- read.table("data1.txt", header = TRUE)
+
+#rpart for estimating a tree
+library(rpart)
+
+#Combining the training and testing data
+data <- rbind(data0, data1)
+
+X <- data[, -ncol(data)]
+y <- data[, ncol(data)]
+
+#Regression tree
+tree <- rpart(y ~ ., data = X)
+
+#Calculating the errors and the prediction
+predictions <- predict(tree, X)
+rmse <- sqrt(mean((predictions - y)^2))
+mape <- mean(abs((predictions - y) / y))
+
+cat("Initial tree's RMSE: ", rmse, "\n")
+cat("Initial tree's MAPE: ", mape, "\n")
+
+#Bagging predictor
+bag.tree <- function(formula, data, nboot = 100) {
+ n <- nrow(data)
+ predictions <- matrix(nrow = n, ncol = nboot)
+ 
+ for (i in 1:nboot) {
+   idx <- sample(n, replace = TRUE)
+   data.boot <- data[idx, ]
+   tree <- rpart(formula, data = data.boot)
+   predictions[, i] <- predict(tree, data)
+ }
+ 
+ bagged.prediction <- rowMeans(predictions)
+ return(bagged.prediction)
+}
+
+bagged.predictions <- bag.tree(y ~ ., data = X, nboot = 100)
+
+#Calculating correlations
+tree.predictions <- predictions
+cor.matrix <- cor(t(tree.predictions))
+
+bagged.rmse <- sqrt(mean((bagged.predictions - y)^2))
+bagged.mape <- mean(abs((bagged.predictions - y) / y))
+
+cat("RMSE of the bagging: ", bagged.rmse, "\n")
+cat("MAPE of the bagging: ", bagged.mape, "\n")
+
+
+plot(y, type = "l", col = "black", main = "Predicting the trees and the real signal")
+lines(predictions, col = "gray")
+lines(bagged.predictions, col = "red", lwd = 2)
+legend("topright", legend = c("Signal réel", "Individual trees", "Bagging"),
+      col = c("black", "gray", "red"), lty = 1)
+
+#Changing the number of the bootstrap draws
+bagged.predictions.50 <- bag.tree(y ~ ., data = X, nboot = 50)
+bagged.rmse.50 <- sqrt(mean((bagged.predictions.50 - y)^2))
+bagged.mape.50 <- mean(abs((bagged.predictions.50 - y) / y))
+
+cat("RMSE:", bagged.rmse.50, "\n")
+cat("MAPE:", bagged.mape.50, "\n")
+```

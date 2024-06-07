@@ -1,0 +1,28 @@
+---
+title: "Part 1: exercise 1"
+output: html_notebook
+---
+
+```{r}
+library(rpart)
+tennum <- read.table("tennum.txt", header=TRUE)
+
+str(tennum)
+
+tree1 <- rpart(Jouer ~ ., data=tennum, control=rpart.control(minsplit=1))
+tree2 <- rpart(Jouer ~ ., data=tennum, control=rpart.control(minsplit=2))
+tree5 <- rpart(Jouer ~ ., data=tennum, control=rpart.control(minsplit=5))
+tree20 <- rpart(Jouer ~ ., data=tennum, control=rpart.control(minsplit=20))
+
+plot(tree1)
+text(tree1)
+
+plot(tree2)
+text(tree2)
+
+plot(tree5)
+text(tree5)
+
+plot(tree20)
+text(tree20)
+```

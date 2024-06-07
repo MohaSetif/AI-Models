@@ -1,0 +1,127 @@
+---
+title: "PART II: exercise 2"
+subtitle: "Bourouba Med El Khalil M1-CS"
+output: html_notebook
+---
+
+## 1. Loading data:
+```{r}
+library(ISLR)
+print(Default)
+```
+
+## 2. Commenting on the results of the **summary** function:
+```{r}
+summary(Default)
+```
+Explanation:
+Here is a summary and commentary on the results from the summary() function for the variables default, student, balance, and income, in English:
+
+**default:**
+No: 9667 observations where the customer did not default on their credit card debt
+Yes: 333 observations where the customer defaulted
+The variable default is a binary (0/1) variable indicating whether the customer defaulted or not. The summary shows that the majority (9667 out of 10000) did not default.
+
+**student**:
+No: 7056 observations where the customer is not a student
+Yes: 2944 observations where the customer is a student
+The variable student is also a binary variable, indicating whether the customer is a student or not. Most customers (7056 out of 10000) are not students.
+
+**balance:**
+Min: Minimum average monthly credit card balance is 0.0
+1st Qu: 25th percentile of balances is 481.7
+Median: Median balance is 823.6
+Mean: Average balance is 835.4
+3rd Qu: 75th percentile of balances is 1166.3
+Max: Maximum balance is 2654.3
+The variable balance represents the average monthly credit card balance. The summary shows the distribution is right-skewed, with the mean exceeding the median due to some very high balance values.
+
+**income:**
+Min: Minimum income is 772
+1st Qu: 25th percentile of incomes is 21340
+Median: Median income is 34553
+Mean: Average income is 33517
+3rd Qu: 75th percentile of incomes is 43808
+Max: Maximum income is 73554
+The variable income represents the customer's income level. Like balance, the income distribution is right-skewed, with a few very high income values pulling the mean above the median.
+
+Overall, this summary provides key insights into the central tendency and spread of the numerical variables balance and income, as well as the frequencies of the binary variables default and student in the dataset.
+
+
+## 3. Replacing Yes with 1 and No with 0:
+```{r}
+Default$default<-ifelse(Default$default == 'Yes', 1, 0)
+print(Default)
+```
+
+## 4. Building the logistic regression:
+```{r}
+#The following code splits 70% of the data selected randomly into training set and the remaining 30% sample into test data set.
+dt = sort(sample(nrow(Default), nrow(Default)*.7))
+train<-Default[dt,]
+test<-Default[-dt,]
+
+logitmod <- glm(default ~ balance, family = "binomial", data = train)
+summary(logitmod)
+```
+Here's a summary of the logistic regression model with balance as the predictor variable for the default outcome:
+
+The model regresses the binary default variable on the continuous balance variable.
+The coefficient estimate for balance is positive (0.005393) and highly statistically significant (p-value < 2e-16).
+This indicates that as the average credit card balance increases, the log-odds of defaulting also increases significantly.
+Specifically, the odds of defaulting increase by a factor of exp(0.005393) = 1.0054 for every $1 increase in the balance variable.
+So higher credit card balances are strongly associated with higher probability of customers defaulting on their debt according to this model.
+The intercept estimate of -10.449753 represents the log-odds of defaulting when balance is 0.
+Model fit statistics like the deviance and AIC are provided to assess goodness-of-fit.
+In summary, this logistic model confirms that the average credit card balance is a highly significant positive predictor of the probability of defaulting, with higher balances associated with higher default risk, when no other variables are included. Adding more predictors could potentially improve the model further.
+
+
+## 5. Prediction:
+```{r}
+coef_values = coef(logitmod)
+intercept = coef_values[1]
+coef_balance = coef_values[2]
+target = c(1000, 1500, 2000, 3000)
+for(i in seq_along(target)){
+  logit_predit = intercept + coef_balance * target[i]
+  print(paste0("For target[", i, "]: ", logit_predit))
+}
+```
+
+## 6. Contingency table of *default* and *student*:
+```{r}
+con_table = table(Default$default, Default$student)
+print(con_table)
+```
+
+## 7. P(default = Yes|student = Yes) and P(default = Yes|student = Non) estimations:
+```{r}
+total = 0
+for(i in 1:nrow(con_table)) { 
+  for(j in 1:ncol(con_table)) {
+    total = con_table[i, j] + total
+  }
+}
+print(total)
+Dy_Sy = con_table[2, 2]/total
+Sy = (con_table[1, 2] + con_table[2, 2])/total
+Dy_Sn = con_table[2, 1]/total
+Sn = (con_table[1, 1] + con_table[2, 1])/total
+
+con_Dy_Sy = Dy_Sy / Sy
+con_Dy_Sn = Dy_Sn / Sn
+print(con_Dy_Sy)
+print(con_Dy_Sn)
+```
+
+## 8. Multiple logisitic model of *default* with *student* and *balance*:
+```{r}
+logitmod1 <- glm(default ~ balance + student, family = "binomial", data = train)
+summary(logitmod1)
+```
+
+## 9. Multiple logisitic model of *default* with *student*, *balance* and *income*:
+```{r}
+logitmod2 <- glm(default ~ balance + student + income, family = "binomial", data = train)
+summary(logitmod2)
+```
